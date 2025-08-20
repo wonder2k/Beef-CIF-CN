@@ -165,6 +165,4 @@ async function fetchAndApplyData() {
 window.onload = () => {
   initSync();
   fetchAndApplyData();
-  render();
-  el.lastUpdate.textContent = `最后更新: ${new Date().toLocaleDateString()}`;
 };
