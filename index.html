@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>巴西牛肉进口CIF实时计算器</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 600px; margin: 20px auto; padding: 10px; }
+  label { display: block; margin: 12px 0 4px; }
+  input[type=number] { width: 100%; padding: 6px; font-size: 1rem; }
+  .output { margin-top: 20px; background: #f8f8f8; padding: 12px; border-radius: 6px; }
+  .alert { padding: 10px; margin-top: 10px; border-radius: 5px; }
+  .alert.good { background: #d4edda; color: #155724; }
+  .alert.warn { background: #fff3cd; color: #856404; }
+  .alert.bad { background: #f8d7da; color: #721c24; }
+</style>
+</head>
+<body>
+<h2>巴西牛肉8分件进口中国CIF价格计算器</h2>
+
+<label for="fob">FOB价格 (美元/吨):</label>
+<input type="number" id="fob" value="4500" step="10" min="0" />
+
+<label for="freight">运费 (美元/吨):</label>
+<input type="number" id="freight" value="200" step="10" min="0" />
+
+<label for="insurance">保险费率 (%):</label>
+<input type="number" id="insurance" value="0.1" step="0.01" min="0" max="1" />
+
+<label for="portFees">港口及清关费 (美元/吨):</label>
+<input type="number" id="portFees" value="80" step="1" min="0" />
+
+<button onclick="calculateCIF()">计算</button>
+
+<div class="output" id="result" style="display:none;">
+  <h3>计算结果</h3>
+  <p id="cifPrice"></p>
+  <p id="importDuty"></p>
+  <p id="vat"></p>
+  <p id="totalCost"></p>
+  <div id="marketComp"></div>
+</div>
+
+<script>
+function calculateCIF() {
+  // 系数和参数
+  const dutyRate = 0.12;  // 12%
+  const vatRate = 0.09;   // 9%
+  const marketPrice = 5213.17; // 参考中国2025年5月进口均价，美元/吨
+
+  // 获取输入数据
+  const fob = parseFloat(document.getElementById('fob').value);
+  const freight = parseFloat(document.getElementById('freight').value);
+  const insuranceRatePerCent = parseFloat(document.getElementById('insurance').value);
+  const portFees = parseFloat(document.getElementById('portFees').value);
+
+  if (fob < 0 || freight < 0 || insuranceRatePerCent < 0 || insuranceRatePerCent > 1 || portFees < 0) {
+    alert('请填写有效的非负数字，保险费率范围0-1%');
+    return;
+  }
+
+  const insuranceRate = insuranceRatePerCent / 100;
+
+  // 计算CIF价格
+  const cifPrice = (fob + freight) / (1 - insuranceRate);
+  const insuranceCost = cifPrice * insuranceRate;
+
+  // 计算关税和增值税
+  const importDuty = cifPrice * dutyRate;
+  const taxableBase = cifPrice + importDuty;
+  const vat = taxableBase * vatRate;
+
+  // 总成本= CIF + 关税 + VAT + 其他港口及清关费用
+  const totalLandedCost = cifPrice + importDuty + vat + portFees;
+
+  // 价格合理性分析
+  const diff = totalLandedCost - marketPrice;
+  const diffPercent = (diff / marketPrice) * 100;
+  let compText = '';
+  let compClass = '';
+
+  if (diffPercent < -5) {
+    compText = '价格低于市场价，具有较强竞争力';
+    compClass = 'good';
+  } else if (diffPercent > 5) {
+    compText = '价格高于市场价，竞争优势有限';
+    compClass = 'bad';
+  } else {
+    compText = '价格与市场价格基本持平';
+    compClass = 'warn';
+  }
+
+  // 更新界面显示
+  document.getElementById('cifPrice').innerText = `CIF价格: $${cifPrice.toFixed(2)} / 吨 (含保险费 $${insuranceCost.toFixed(2)})`;
+  document.getElementById('importDuty').innerText = `进口关税 (12%): $${importDuty.toFixed(2)} / 吨`;
+  document.getElementById('vat').innerText = `增值税 (9%): $${vat.toFixed(2)} / 吨`;
+  document.getElementById('totalCost').innerText = `总到岸成本: $${totalLandedCost.toFixed(2)} / 吨 (含港口及清关费 $${portFees.toFixed(2)})`;
+  
+  const compDiv = document.getElementById('marketComp');
+  compDiv.innerHTML = `<div class="alert ${compClass}">${compText}<br>相较市场价差异：${diffPercent.toFixed(2)}%</div>`;
+
+  document.getElementById('result').style.display = 'block';
+}
+</script>
+
+</body>
+</html>
