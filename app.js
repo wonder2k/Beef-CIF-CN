@@ -1,60 +1,38 @@
 const el = {
-  cepeaSlider: document.getElementById('cepeaSlider'),
-  cepeaInput: document.getElementById('cepeaInput'),
-  cmeSlider: document.getElementById('cmeSlider'),
-  cmeInput: document.getElementById('cmeInput'),
-  processSlider: document.getElementById('processSlider'),
-  processInput: document.getElementById('processInput'),
-  fobSlider: document.getElementById('fobSlider'),
-  fobInput: document.getElementById('fobInput'),
-  freightSlider: document.getElementById('freightSlider'),
-  freightInput: document.getElementById('freightInput'),
-  insuranceSlider: document.getElementById('insuranceSlider'),
-  insuranceInput: document.getElementById('insuranceInput'),
-  otherSlider: document.getElementById('otherSlider'),
-  otherInput: document.getElementById('otherInput'),
-  portSlider: document.getElementById('portSlider'),
-  portInput: document.getElementById('portInput'),
-  exchangeSlider: document.getElementById('exchangeSlider'),
-  exchangeInput: document.getElementById('exchangeInput'),
+  cepeaSlider: document.getElementById('cepeaSlider'), cepeaInput: document.getElementById('cepeaInput'),
+  cmeSlider: document.getElementById('cmeSlider'), cmeInput: document.getElementById('cmeInput'),
+  processSlider: document.getElementById('processSlider'), processInput: document.getElementById('processInput'),
+  freightSlider: document.getElementById('freightSlider'), freightInput: document.getElementById('freightInput'),
+  insuranceSlider: document.getElementById('insuranceSlider'), insuranceInput: document.getElementById('insuranceInput'),
+  otherSlider: document.getElementById('otherSlider'), otherInput: document.getElementById('otherInput'),
+  portSlider: document.getElementById('portSlider'), portInput: document.getElementById('portInput'),
+  exchangeSlider: document.getElementById('exchangeSlider'), exchangeInput: document.getElementById('exchangeInput'),
+  marketSlider: document.getElementById('marketSlider'), marketInput: document.getElementById('marketInput'),
   tariffSelect: document.getElementById('tariffSelect'),
-
   lastUpdate: document.getElementById('last-update'),
-  fobWeighted: document.getElementById('fobWeighted'),
-  cifPrice: document.getElementById('cifPrice'),
-  totalUsd: document.getElementById('totalUsd'),
-  totalCny: document.getElementById('totalCny'),
-  diffPct: document.getElementById('diffPct'),
-  suggestion: document.getElementById('suggestion'),
-  chartCanvas: document.getElementById('costChart'),
-  costDetails: document.getElementById('costDetails'),
+  fobWeighted: document.getElementById('fobWeighted'), cifPrice: document.getElementById('cifPrice'),
+  totalUsd: document.getElementById('totalUsd'), totalCny: document.getElementById('totalCny'),
+  diffPct: document.getElementById('diffPct'), suggestion: document.getElementById('suggestion'),
+  chartCanvas: document.getElementById('costChart'), costDetails: document.getElementById('costDetails'),
+  marketPriceKpi: document.getElementById('marketPriceKpi'),
 };
-
-const CHINA_MARKET = 5213; // 人民币市场均价
 
 function sync(slider, input) {
   if (!slider || !input) return;
-  slider.addEventListener('input', () => {
-    input.value = slider.value;
-    render();
-  });
-  input.addEventListener('input', () => {
-    slider.value = input.value;
-    render();
-  });
+  slider.addEventListener('input', () => { input.value = slider.value; render(); });
+  input.addEventListener('input', () => { slider.value = input.value; render(); });
 }
-
 function initSync() {
   [
     ['cepeaSlider', 'cepeaInput'],
     ['cmeSlider', 'cmeInput'],
     ['processSlider', 'processInput'],
-    ['fobSlider', 'fobInput'],
     ['freightSlider', 'freightInput'],
     ['insuranceSlider', 'insuranceInput'],
     ['otherSlider', 'otherInput'],
     ['portSlider', 'portInput'],
     ['exchangeSlider', 'exchangeInput'],
+    ['marketSlider', 'marketInput']
   ].forEach(([sid, iid]) => {
     sync(document.getElementById(sid), document.getElementById(iid));
   });
@@ -63,7 +41,7 @@ function initSync() {
 
 function weightedFOB(cepea, cmeCents, process) {
   const cepeaUsdTon = Number(cepea) * 1000;
-  const cmeUsdTon = Number(cmeCents) * 0.0220462 * 1000;
+  const cmeUsdTon = Number(cmeCents) * 22.0462; // 修正单位换算
   return (cepeaUsdTon + cmeUsdTon + Number(process)) / 3;
 }
 
@@ -71,12 +49,12 @@ function calc() {
   const cepea = parseFloat(el.cepeaInput.value);
   const cme = parseFloat(el.cmeInput.value);
   const process = parseFloat(el.processInput.value);
-  const baseFob = parseFloat(el.fobInput.value);
   const freight = parseFloat(el.freightInput.value);
   const insurance = parseFloat(el.insuranceInput.value);
   const other = parseFloat(el.otherInput.value);
   const port = parseFloat(el.portInput.value);
   const ex = parseFloat(el.exchangeInput.value);
+  const marketPrice = parseFloat(el.marketInput.value);
   const tariffSel = parseFloat(el.tariffSelect.value);
 
   const fobW = weightedFOB(cepea, cme, process);
@@ -86,27 +64,11 @@ function calc() {
   const vat = preVat * 0.09;
   const totalUsd = preVat + vat;
   const totalCny = totalUsd * ex;
-  const diffPct = ((totalCny - CHINA_MARKET) / CHINA_MARKET) * 100;
+  const diffPct = ((totalUsd - marketPrice) / marketPrice) * 100;
 
   return {
-    cepea,
-    cme,
-    process,
-    baseFob,
-    freight,
-    insurance,
-    other,
-    port,
-    ex,
-    tariffSel,
-    fobW,
-    cif,
-    tariff,
-    preVat,
-    vat,
-    totalUsd,
-    totalCny,
-    diffPct,
+    cepea, cme, process, freight, insurance, other, port, ex, marketPrice, tariffSel,
+    fobW, cif, tariff, preVat, vat, totalUsd, totalCny, diffPct
   };
 }
 
@@ -115,6 +77,7 @@ function renderPanels(m) {
   el.cifPrice.textContent = `$${m.cif.toFixed(2)}`;
   el.totalUsd.textContent = `$${m.totalUsd.toFixed(2)}`;
   el.totalCny.textContent = `¥${Math.round(m.totalCny)}`;
+  el.marketPriceKpi.textContent = `$${Number(m.marketPrice).toFixed(2)}`;
   el.diffPct.textContent = `${m.diffPct.toFixed(1)}%`;
 
   if (m.diffPct <= 5) {
@@ -172,6 +135,7 @@ function render() {
   const m = calc();
   renderPanels(m);
 }
+
 window.onload = () => {
   initSync();
   render();
