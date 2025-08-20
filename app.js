@@ -136,8 +136,35 @@ function render() {
   renderPanels(m);
 }
 
+async function fetchAndApplyData() {
+  try {
+    const res = await fetch('/api/price-data');
+    if (!res.ok) throw new Error('网络响应失败');
+    const data = await res.json();
+    if (data.cepea) {
+      el.cepeaSlider.value = data.cepea;
+      el.cepeaInput.value = data.cepea;
+    }
+    if (data.cme) {
+      el.cmeSlider.value = data.cme;
+      el.cmeInput.value = data.cme;
+    }
+    if (data.market_price) {
+      el.marketSlider.value = data.market_price;
+      el.marketInput.value = data.market_price;
+    }
+    if (data.lastUpdate) {
+      el.lastUpdate.textContent = '数据最后更新: ' + data.lastUpdate;
+    }
+    render();
+  } catch (e) {
+    console.error('获取接口数据失败', e);
+  }
+}
+
 window.onload = () => {
   initSync();
+  fetchAndApplyData();
   render();
   el.lastUpdate.textContent = `最后更新: ${new Date().toLocaleDateString()}`;
 };
