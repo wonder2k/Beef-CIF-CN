@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>巴西牛肉8分件进口中国CIF价格计算系统</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
   <style>
     body { font-family: 'Inter', Arial, sans-serif; background: #f4f7fb; margin: 0; }
     .container { max-width: 1100px; margin: 30px auto 0; padding: 30px 20px; background: #fff; border-radius: 18px; box-shadow: 0 4px 20px rgba(0,0,0,.06);}
@@ -16,7 +16,7 @@
     .section-label { font-weight: 600; margin-bottom: 18px; letter-spacing: .5px;}
     .sliders { display: flex; flex-direction: column; gap:16px;}
     .slider-row { display: flex; align-items: center; justify-content: space-between;}
-    .slider-row label { min-width: 130px; }
+    .slider-row label { min-width: 160px; }
     .slider-row input[type=number], .slider-row input[type=range] { flex:1; margin-left: 10px;}
     .btn { background: #1e5fde; color: #fff; padding: 9px 32px; font-size: 1rem; border:none; border-radius:6px; margin-top:20px; cursor:pointer; font-weight:500;}
     .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 22px;}
@@ -29,130 +29,207 @@
     .alert.bad { background: #feeeee; color: #b64646;}
     .chart-panel { background: #fafafc; border-radius: 12px; box-shadow: 0 2px 8px #eaedee30; padding:22px; margin-top:16px;}
     @media (max-width: 900px) { .flex { flex-direction: column; } .container { padding: 15px 7px; } }
+    input[readonly] { background: #e9ecef; border-radius: 4px; border: 1px solid #ced4da; padding: 6px 8px; }
   </style>
 </head>
 <body>
-<div class="container">
-  <div class="title">巴西牛肉8分件进口中国CIF价格评估系统</div>
-  <div class="subtitle">基于CEPEA、CME及中国海关数据的实时价格计算与合理性判断</div>
-  <div class="flex">
-    <!-- 左侧参数设置 -->
-    <div class="card" style="min-width:330px; max-width:400px;">
-      <div class="section-label">参数设置</div>
-      <div class="sliders">
-        <div class="slider-row">
-          <label for="fob">FOB价格 (美元/吨)</label>
-          <input type="range" id="fob" min="4000" max="5500" value="4500" step="10" oninput="fobVal.value=this.value">
-          <input type="number" id="fobVal" value="4500" min="4000" max="5500" step="10" oninput="fob.value=this.value">
+  <div class="container">
+    <div class="title">巴西牛肉8分件进口中国CIF价格评估系统</div>
+    <div class="subtitle">基于CEPEA、CME及中国海关数据的实时价格计算与合理性判断</div>
+    <div class="flex">
+      <!-- 左侧参数设置 -->
+      <div class="card" style="min-width:360px; max-width:420px;">
+        <div class="section-label">参数设置</div>
+        <div class="sliders">
+          <!-- CEPEA活牛价 -->
+          <div class="slider-row">
+            <label for="cepea">CEPEA活牛价 (美元/公斤)</label>
+            <input type="range" id="cepea" min="3.8" max="5.5" step="0.05" value="4.5" oninput="syncRangeAndNumber('cepea')">
+            <input type="number" id="cepeaVal" min="3.8" max="5.5" step="0.05" value="4.5" oninput="syncRangeAndNumber('cepea')">
+          </div>
+          <!-- CME参考价 -->
+          <div class="slider-row">
+            <label for="cme">CME参考价 (美分/磅)</label>
+            <input type="range" id="cme" min="200" max="350" step="1" value="236" oninput="syncRangeAndNumber('cme')">
+            <input type="number" id="cmeVal" min="200" max="350" step="1" value="236" oninput="syncRangeAndNumber('cme')">
+          </div>
+          <!-- 加工费 -->
+          <div class="slider-row">
+            <label for="process">加工费 (美元/吨)</label>
+            <input type="range" id="process" min="100" max="350" step="10" value="180" oninput="syncRangeAndNumber('process')">
+            <input type="number" id="processVal" min="100" max="350" step="10" value="180" oninput="syncRangeAndNumber('process')">
+          </div>
+          <!-- 自动计算的FOB价格 -->
+          <div class="slider-row">
+            <label for="fob">计算得FOB价格 (美元/吨)</label>
+            <input type="number" id="fob" readonly value="4500" />
+          </div>
+          <!-- 运费 -->
+          <div class="slider-row">
+            <label for="freight">运费 (美元/吨)</label>
+            <input type="range" id="freight" min="150" max="550" value="200" step="10" oninput="syncRangeAndNumber('freight')">
+            <input type="number" id="freightVal" min="150" max="550" value="200" step="10" oninput="syncRangeAndNumber('freight')">
+          </div>
+          <!-- 保险费率 -->
+          <div class="slider-row">
+            <label for="insurance">保险费率 (%)</label>
+            <input type="range" id="insurance" min="0.05" max="0.2" value="0.1" step="0.01" oninput="syncRangeAndNumber('insurance')">
+            <input type="number" id="insuranceVal" min="0.05" max="0.2" value="0.1" step="0.01" oninput="syncRangeAndNumber('insurance')">
+          </div>
+          <!-- 港口及清关费 -->
+          <div class="slider-row">
+            <label for="portFees">港口及清关费 (美元/吨)</label>
+            <input type="range" id="portFees" min="50" max="150" value="80" step="5" oninput="syncRangeAndNumber('portFees')">
+            <input type="number" id="portFeesVal" min="50" max="150" value="80" step="5" oninput="syncRangeAndNumber('portFees')">
+          </div>
         </div>
-        <div class="slider-row">
-          <label for="freight">运费 (美元/吨)</label>
-          <input type="range" id="freight" min="150" max="550" value="200" step="10" oninput="freightVal.value=this.value">
-          <input type="number" id="freightVal" value="200" min="150" max="550" step="10" oninput="freight.value=this.value">
+        <button class="btn" onclick="calculateAll()">实时计算</button>
+      </div>
+
+      <!-- 右侧结果显示 -->
+      <div style="flex:1;">
+        <div class="section-label">计算结果</div>
+        <div class="grid">
+          <div class="result-card"><div class="result-label">CIF价格</div><span id="cifPrice">$0.00</span></div>
+          <div class="result-card"><div class="result-label">进口关税 (12%)</div><span id="importDuty">$0.00</span></div>
+          <div class="result-card"><div class="result-label">增值税 (9%)</div><span id="vat">$0.00</span></div>
+          <div class="result-card"><div class="result-label">总到岸成本</div><span id="totalCost">$0.00</span></div>
         </div>
-        <div class="slider-row">
-          <label for="insurance">保险费率 (%)</label>
-          <input type="range" id="insurance" min="0.05" max="0.2" value="0.1" step="0.01" oninput="insuranceVal.value=this.value">
-          <input type="number" id="insuranceVal" value="0.1" min="0.05" max="0.2" step="0.01" oninput="insurance.value=this.value">
-        </div>
-        <div class="slider-row">
-          <label for="portFees">港口及清关费 (美元/吨)</label>
-          <input type="range" id="portFees" min="50" max="150" value="80" step="5" oninput="portFeesVal.value=this.value">
-          <input type="number" id="portFeesVal" value="80" min="50" max="150" step="5" oninput="portFees.value=this.value">
+        <div id="marketComp" class="alert good">等待计算...</div>
+
+        <!-- 成本结构图 -->
+        <div class="chart-panel">
+          <div class="section-label">成本构成分析</div>
+          <canvas id="costChart" height="240"></canvas>
         </div>
       </div>
-      <button class="btn" onclick="calculateCIF()">实时计算</button>
-    </div>
-    <!-- 右侧结果显示 -->
-    <div>
-      <div class="section-label">计算结果</div>
-      <div class="grid">
-        <div class="result-card"><div class="result-label">CIF价格</div><span id="cifPrice">$4,704.70</span></div>
-        <div class="result-card"><div class="result-label">进口关税(12%)</div><span id="importDuty">$564.56</span></div>
-        <div class="result-card"><div class="result-label">增值税(9%)</div><span id="vat">$474.23</span></div>
-        <div class="result-card"><div class="result-label">总到岸成本</div><span id="totalCost">$5,823.50</span></div>
-      </div>
-      <div id="marketComp" class="alert good">可以进口，价格在合理区间（-9.8%）</div>
     </div>
   </div>
-  <!-- 成本结构图区域 -->
-  <div class="chart-panel">
-    <div class="section-label">成本构成分析</div>
-    <canvas id="costChart" height="220"></canvas>
-  </div>
-</div>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-function calculateCIF() {
-  // 获取参数
-  const fob = parseFloat(document.getElementById('fob').value);
-  const freight = parseFloat(document.getElementById('freight').value);
-  const insuranceRatePerCent = parseFloat(document.getElementById('insurance').value); //百分比
-  const portFees = parseFloat(document.getElementById('portFees').value);
 
-  // 固定参数
-  const dutyRate = 0.12, vatRate = 0.09;
-  const marketPrice = 5213.17; //中国市场均价
-
-  const insuranceRate = insuranceRatePerCent / 100;
-  // 计算CIF
-  const cifPrice = (fob + freight) / (1 - insuranceRate);
-  const insuranceCost = cifPrice * insuranceRate;
-  // 关税和增值税
-  const importDuty = cifPrice * dutyRate;
-  const taxableBase = cifPrice + importDuty;
-  const vat = taxableBase * vatRate;
-
-  const totalLandedCost = cifPrice + importDuty + vat + portFees;
-  // 合理性分析
-  const diffPercent = ((totalLandedCost - marketPrice) / marketPrice) * 100;
-  let compClass, compText;
-  if (diffPercent < -5) {compText = `可以进口，价格在合理区间（${diffPercent.toFixed(1)}%）`; compClass = 'good'}
-  else if (diffPercent > 5) {compText = `价格高于市场价，进口谨慎（${diffPercent.toFixed(1)}%）`; compClass = 'bad'}
-  else {compText = `价格与市场基本持平（${diffPercent.toFixed(1)}%）`; compClass = 'warn'}
-
-  // 更新界面
-  document.getElementById('cifPrice').innerText = '$' + cifPrice.toFixed(2);
-  document.getElementById('importDuty').innerText = '$' + importDuty.toFixed(2);
-  document.getElementById('vat').innerText = '$' + vat.toFixed(2);
-  document.getElementById('totalCost').innerText = '$' + totalLandedCost.toFixed(2);
-  document.getElementById('marketComp').className = "alert " + compClass;
-  document.getElementById('marketComp').innerText = compText;
-
-  // 更新图表
-  updateChart({
-    FOB: fob,
-    运费: freight,
-    保险: insuranceCost,
-    关税: importDuty,
-    增值税: vat,
-    港口清关: portFees
-  });
-}
-
-// 成本结构图表
-let chart;
-function updateChart(data) {
-  const ctx = document.getElementById('costChart').getContext('2d');
-  const values = Object.values(data);
-  const labels = Object.keys(data);
-  if (chart) {chart.destroy();}
-  chart = new Chart(ctx,{
-    type: 'bar',
-    data: {labels, datasets: [{
-      label: '成本构成（美元/吨）',
-      data: values,
-      backgroundColor: ['#3683F1','#5EBC88','#FFD164','#FFC1A5','#F57F7F','#BEBEBE']
-    }]},
-    options: {
-      plugins:{legend: {display:false}},
-      scales:{y:{beginAtZero:true}}
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // 保持滑块和数字框同步函数
+    function syncRangeAndNumber(prefix) {
+      const range = document.getElementById(prefix);
+      const number = document.getElementById(prefix + 'Val');
+      if (event.target === range) {
+        number.value = range.value;
+      } else {
+        range.value = number.value;
+      }
+      if(['cepea','cme','process'].includes(prefix)) {
+        calculateFOB();
+      }
+      if(['freight','insurance','portFees'].includes(prefix)) {
+        calculateAll();
+      }
     }
-  });
-}
 
-// 首次初始化
-calculateCIF();
-</script>
+    // 计算FOB价格
+    function calculateFOB() {
+      // 获取参数
+      const cepeaPrice = parseFloat(document.getElementById('cepea').value); // 美元/kg
+      const cmePriceCent = parseFloat(document.getElementById('cme').value); // 美分/lb
+      const processFee = parseFloat(document.getElementById('process').value); // 美元/吨
+
+      // 美分/磅转换美元/kg: 1美分/磅 = 0.0220462美元/kg
+      const cmePriceUsdKg = cmePriceCent * 0.0220462;
+
+      // FOB计算，平均后*1000公斤 + 加工费
+      const fob = ((cepeaPrice + cmePriceUsdKg) / 2) * 1000 + processFee;
+
+      // 更新FOB展示（只读）
+      document.getElementById('fob').value = fob.toFixed(0);
+
+      // 触发整体计算
+      calculateAll();
+    }
+
+    // 完整成本计算及结果更新
+    function calculateAll() {
+      // 获取数据
+      const fob = parseFloat(document.getElementById('fob').value);
+      const freight = parseFloat(document.getElementById('freight').value);
+      const insuranceRate = parseFloat(document.getElementById('insurance').value) / 100;
+      const portFees = parseFloat(document.getElementById('portFees').value);
+
+      const dutyRate = 0.12;
+      const vatRate = 0.09;
+      const marketPrice = 5213.17;
+
+      // CIF价格含保险
+      const cifPrice = (fob + freight) / (1 - insuranceRate);
+      const insuranceCost = cifPrice * insuranceRate;
+
+      // 按从价计算关税
+      const importDuty = cifPrice * dutyRate;
+      const taxableBase = cifPrice + importDuty;
+      const vat = taxableBase * vatRate;
+
+      const totalLandedCost = cifPrice + importDuty + vat + portFees;
+
+      // 合理性判断
+      const diffPercent = ((totalLandedCost - marketPrice) / marketPrice) * 100;
+      let compClass, compText;
+      if(diffPercent < -5) {
+        compClass = 'good';
+        compText = `可以进口，价格在合理区间 (${diffPercent.toFixed(1)}%)`;
+      } else if(diffPercent > 5){
+        compClass = 'bad';
+        compText = `价格高于市场价，进口谨慎 (${diffPercent.toFixed(1)}%)`;
+      } else {
+        compClass = 'warn';
+        compText = `价格与市场基本持平 (${diffPercent.toFixed(1)}%)`;
+      }
+
+      // UI更新
+      document.getElementById('cifPrice').innerText = '$' + cifPrice.toFixed(2);
+      document.getElementById('importDuty').innerText = '$' + importDuty.toFixed(2);
+      document.getElementById('vat').innerText = '$' + vat.toFixed(2);
+      document.getElementById('totalCost').innerText = '$' + totalLandedCost.toFixed(2);
+      const compDiv = document.getElementById('marketComp');
+      compDiv.className = `alert ${compClass}`;
+      compDiv.textContent = compText;
+
+      // 更新图表数据
+      updateChart({
+        'FOB价格': fob,
+        '运费': freight,
+        '保险费': insuranceCost,
+        '进口关税': importDuty,
+        '增值税': vat, 
+        '港口清关费': portFees
+      });
+    }
+
+    // 初始化并更新图表
+    let costChart;
+    function updateChart(data) {
+      const ctx = document.getElementById('costChart').getContext('2d');
+      const labels = Object.keys(data);
+      const values = Object.values(data);
+      if(costChart) costChart.destroy();
+      costChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '成本构成 (美元/吨)',
+            data: values,
+            backgroundColor: ['#3f8efc','#5acba0','#f1b455','#f4685d','#ad8be9','#bfc1c4']
+          }]
+        },
+        options: {
+          plugins: { legend: { display: false }},
+          scales: { y: { beginAtZero: true } }
+        }
+      });
+    }
+
+    // 页面加载初始化
+    window.onload = () => {
+      calculateFOB();
+    };
+  </script>
 </body>
 </html>
