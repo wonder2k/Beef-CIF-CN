@@ -5,6 +5,7 @@
   <title>巴西牛肉进口中国CIF价格动态评估计算器</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="header">
@@ -18,66 +19,39 @@
       <h2>参数设置</h2>
       <div class="field">
         <label>CEPEA活牛价 (美元/公斤)</label>
-        <div class="input-row">
-          <input type="range" id="cepeaSlider" min="3.8" max="5.5" step="0.01" value="4.5" />
-          <input type="number" id="cepeaInput" min="3.8" max="5.5" step="0.01" value="4.5" />
-        </div>
+        <div class="input-row"><input type="range" id="cepeaSlider" min="3.8" max="5.5" step="0.01" value="4.5" /><input type="number" id="cepeaInput" min="3.8" max="5.5" step="0.01" value="4.5" /></div>
       </div>
       <div class="field">
         <label>CME参考价 (美分/磅)</label>
-        <div class="input-row">
-          <input type="range" id="cmeSlider" min="200" max="350" step="1" value="236" />
-          <input type="number" id="cmeInput" min="200" max="350" step="1" value="236" />
-        </div>
+        <div class="input-row"><input type="range" id="cmeSlider" min="200" max="350" step="1" value="236" /><input type="number" id="cmeInput" min="200" max="350" step="1" value="236" /></div>
       </div>
       <div class="field">
         <label>加工费 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="processSlider" min="100" max="350" step="10" value="180" />
-          <input type="number" id="processInput" min="100" max="350" step="10" value="180" />
-        </div>
-      </div>
-      <div class="field">
-        <label>初始FOB基准价格 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="fobSlider" min="4000" max="5600" step="10" value="4500" />
-          <input type="number" id="fobInput" min="4000" max="5600" step="10" value="4500" />
-        </div>
+        <div class="input-row"><input type="range" id="processSlider" min="100" max="350" step="10" value="180" /><input type="number" id="processInput" min="100" max="350" step="10" value="180" /></div>
       </div>
       <div class="field">
         <label>运费 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="freightSlider" min="150" max="550" step="10" value="200" />
-          <input type="number" id="freightInput" min="150" max="550" step="10" value="200" />
-        </div>
+        <div class="input-row"><input type="range" id="freightSlider" min="150" max="550" step="10" value="200" /><input type="number" id="freightInput" min="150" max="550" step="10" value="200" /></div>
       </div>
       <div class="field">
         <label>保险费 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="insuranceSlider" min="5" max="30" step="1" value="8" />
-          <input type="number" id="insuranceInput" min="5" max="30" step="1" value="8" />
-        </div>
+        <div class="input-row"><input type="range" id="insuranceSlider" min="5" max="30" step="1" value="8" /><input type="number" id="insuranceInput" min="5" max="30" step="1" value="8" /></div>
       </div>
       <div class="field">
         <label>其他费用 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="otherSlider" min="0" max="80" step="2" value="20" />
-          <input type="number" id="otherInput" min="0" max="80" step="2" value="20" />
-        </div>
+        <div class="input-row"><input type="range" id="otherSlider" min="0" max="80" step="2" value="20" /><input type="number" id="otherInput" min="0" max="80" step="2" value="20" /></div>
       </div>
       <div class="field">
         <label>港口杂费 (美元/吨)</label>
-        <div class="input-row">
-          <input type="range" id="portSlider" min="50" max="150" step="5" value="80" />
-          <input type="number" id="portInput" min="50" max="150" step="5" value="80" />
-        </div>
+        <div class="input-row"><input type="range" id="portSlider" min="50" max="150" step="5" value="80" /><input type="number" id="portInput" min="50" max="150" step="5" value="80" /></div>
       </div>
       <div class="field">
         <label>汇率 (USD→CNY)</label>
-        <div class="input-row">
-          <input type="range" id="exchangeSlider" min="6.2" max="7.8" step="0.01" value="7.2" />
-          <input type="number" id="exchangeInput" min="6.2" max="7.8" step="0.01" value="7.2" />
-        </div>
+        <div class="input-row"><input type="range" id="exchangeSlider" min="6.2" max="7.8" step="0.01" value="7.2" /><input type="number" id="exchangeInput" min="6.2" max="7.8" step="0.01" value="7.2" /></div>
+      </div>
+      <div class="field">
+        <label>中国市场均价 (美元/吨)</label>
+        <div class="input-row"><input type="range" id="marketSlider" min="4800" max="5500" step="10" value="5000" /><input type="number" id="marketInput" min="4800" max="5500" step="10" value="5000" /></div>
       </div>
       <div class="field">
         <label>关税率 (%)</label>
@@ -92,30 +66,12 @@
     <div class="card panel" style="min-width:380px;">
       <h2>计算结果</h2>
       <div class="kpi-grid">
-        <div class="kpi">
-          <div class="kpi-title">加权平均FOB价格</div>
-          <div class="kpi-value" id="fobWeighted">$-</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">CIF价格</div>
-          <div class="kpi-value" id="cifPrice">$-</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">最终进口成本（美元）</div>
-          <div class="kpi-value" id="totalUsd">$-</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">最终进口成本（人民币）</div>
-          <div class="kpi-value" id="totalCny">¥-</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">中国市场均价</div>
-          <div class="kpi-value">¥5213/吨</div>
-        </div>
-        <div class="kpi">
-          <div class="kpi-title">价格差异</div>
-          <div class="kpi-value" id="diffPct">--</div>
-        </div>
+        <div class="kpi"><div class="kpi-title">加权平均FOB价格</div><div class="kpi-value" id="fobWeighted">$-</div></div>
+        <div class="kpi"><div class="kpi-title">CIF价格</div><div class="kpi-value" id="cifPrice">$-</div></div>
+        <div class="kpi"><div class="kpi-title">最终进口成本（美元）</div><div class="kpi-value" id="totalUsd">$-</div></div>
+        <div class="kpi"><div class="kpi-title">最终进口成本（人民币）</div><div class="kpi-value" id="totalCny">¥-</div></div>
+        <div class="kpi"><div class="kpi-title">中国市场均价</div><div class="kpi-value" id="marketPriceKpi">$-</div></div>
+        <div class="kpi"><div class="kpi-title">价格差异</div><div class="kpi-value" id="diffPct">--</div></div>
       </div>
       <div class="suggestion" id="suggestion">-</div>
       <div class="section-title">成本构成分析</div>
